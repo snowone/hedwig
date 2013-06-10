@@ -1,0 +1,53 @@
+/*
+ * Copyright 2010 the original author or authors.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package com.hs.mail.imap.message.search;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This class implements a composite SearchKey composed with multiple
+ * SearchKeys.
+ * 
+ * @author Won Chul Doh
+ * @since Apr 6, 2010
+ * 
+ */
+public abstract class SearchKeyList extends SearchKey {
+
+	protected List<SearchKey> keys;
+
+	public SearchKeyList(List<SearchKey> keys) {
+		this.keys = keys;
+	}
+
+	public SearchKeyList() {
+		this(new ArrayList<SearchKey>());
+	}
+
+	public void addKey(SearchKey key) {
+		keys.add(key);
+	}
+	
+	public List<SearchKey> getSearchKeys() {
+		return keys;
+	}
+	
+	public int size() {
+		return keys.size();
+	}
+	
+}

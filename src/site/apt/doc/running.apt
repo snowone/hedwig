@@ -1,0 +1,51 @@
+                       ---------------------
+                       Running the server
+                       ---------------------
+
+Starting
+
+   Run the server with the bin/run.sh command with start parameter on Unix/Linux or bin/run.bat on Windows system:
+
+----
+localhost:/home/hedwig/bin# ./run.sh start
+
+-- or --
+
+D:\hedwig\bin> run.bat
+----
+
+   The server should be now running and ready for imcoming IMAP4 connections. 
+
+Stopping
+
+   Run the server with the bin/run.sh command with stop parameter on Unix/Linux system. On Windows system close the running window:
+
+----
+localhost:/home/hedwig/bin# ./run.sh stop
+----
+
+Checking that server is running
+
+   Check that Hedwig IMAP server is listening for connections:
+
+----
+# telnet localhost 143
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+* OK Hedwig ready.
+----
+
+   If you get "connection refused", check the log files for error messages.		
+
+   Check that Hedwig SMTP server is listening for connections:
+
+----
+# telnet localhost 25
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+220 example.com Service ready
+----
+
+   If you get "connection refused", check the log files for error messages.

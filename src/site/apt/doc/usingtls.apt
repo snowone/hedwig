@@ -1,0 +1,188 @@
+                       ---------------------
+                       Using SSL/TLS
+                       ---------------------
+
+Introduction
+
+   (Adapted from the James Wiki)
+
+   The usage of SSL/TLS (Security Socket Layer / Transport Layer Security) protocol allows two applications to exchange data in an encrypted way, 
+   as for example between a browser client and a HTTP server when using the HTTPS access method (https://). 
+
+   The SSL/TLS support in Hedwig is available for both IMAPS ("secured" IMAP) and SMTPS ("secured" SMTP), 
+   independently of each other. 
+   To activate it, Hedwig must be configured in such a way that it expects SSL/TLS connection requests over specific ports, 
+   typically 465 for SMTPS and 993 for IMAPS.
+
+   The IMAPS is used between a mail client and a Hedwig server to download confidential messages from mailboxes to the client.
+   The SMTPS is used between a mail client and a Hedwig server to upload confidential messages to Hedwig and have it sent out.
+
+   SMTPS could also be used between two SMTP servers to exchange messages, but it would be a special setting, 
+   as the two servers would need to known in advance that they should communicate between them in a special way (SMTPS). 
+   Instead, the standard behavior is to have an SMTP server connect to another SMTP server on port 25 using plain SMTP. 
+
+   So, if you decided to have your Hedwig server as waiting on port 465 using SMTPS 
+   to allow the clients to securely upload emails if properly setup,
+   you should add a new service waiting on port 25 using plain SMTP to allow the clients upload emails as per their normal setup 
+   and other SMTP servers connect as standard to bring inbound mail.
+
+   This way, properly setup clients, managed by users "local" to your Hedwig server, 
+   can securely exchange confidential messages even if running on PCs physically located outside the local network: 
+   no internal or external sniffer can "see" the contents of such messages. 
+   Obviously, messages coming from / going to other SMTP servers do anyway travel in clear. 
+   All this assumes that the administrator is reliable and the Hedwig server spools and mailboxes are properly protected, 
+   as they are not encrypted.
+
+PKI and X.509 Certificates
+
+   SSL/TLS uses PKI technology, with X.509 certificates.
+   A "keypair" must be generated for the Hedwig server; 
+   a signed X.509 certificate could be requested from a Certification Authority automatically trusted by the various mail clients,
+   in order to have them accept the SSL/TLS session without asking the end user for a "trust" confirmation. 
+
+   A "self-signed" certificate (i.e. not signed by anyone else) or signed by a "not trusted" Certification Authority should also work
+   (tested with MS Outlook 2007, 2010 and Mozilla Thunderbird 3.1).
+   In such case these clients pops up a warning message box saying like: 
+   <"The server you are connected to is using a security certificate that could not be verified.
+   A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+   Do you want to continue using this server?">.
+   If answer is yes further request to the server will be automatically accepted until the client is restarted, 
+   in which case the server will become untrusted again.
+   To have the server permanently trusted by the client, 
+   you should install the certificate from Certification Authority (like verisign.com, trustcenter.de).
+
+Hedwig Setup Examples
+
+   Here follows IMAPS and SMTPS example, where a new IMAP service named <imaps.server> 
+   and a new SMTP service named <smtps.server> are setup.
+
+   In <default.properties>, configure keystore information.
+
+----
+tls_keystore=d:\\hedwig\\conf\\hedwig.jks
+tls_keypass=secret
+tls_storepass=secret
+----
+
+   In <applicationContext.xml>, setup a different service for SSL/TLS, 
+   using port 993 for IMAPS and 465 for SMTPS.
+   (just duplicate the existing entries for the imap.server and smtp.server, 
+   change the id to imaps.server and smtps.server and change the entries as shown below):
+
+----
+<bean id="imaps.server" class="com.hs.mail.imap.server.ImapServer" depends-on="config">
+        <property name="useTLS" value="true"/>
+        <property name="port" value="993"/>
+</bean>
+
+<bean id="smtps.server" class="com.hs.mail.smtp.server.SmtpServer" depends-on="config">
+        <property name="useTLS" value="true"/>
+        <property name="port" value="465"/>
+        <property name="taskExecutor" ref="smtp.taskExecutor"/>
+</bean>
+----
+
+Mail Client Setup
+
+* MS Outlook 2007
+
+   On the <Tools> menu, click <Account Settings>.
+   Highlight your e-mail account, then click <Change> to open the settings dialog.
+   In the <Change E-mail Account> dialog, click the <More settings> button, then choose the <Advanced> tab.
+   In the <Advanced> tab, choose <TLS> in the <Use the following type of encrypted connection list(E)>.
+   Make sure that the <Incoming server (IMAP)> port number is 993.
+   In the <Use the following type of encrypted connection list(C)>, choose <TLS>.
+   Make sure that the <Outgoing server (SMTP)> port number is 465.
+
+* Mozilla Thunderbird 3.1
+
+   In the left pane, select <Server Settings> option under your account.
+   In the right pane, select <SSL/TLS> option in the <Connection security> options.
+   The <Port> will be changed to 993 automatically.
+   In the left pane, select <Outgoing Server (SMTP)> from the bottom of the list.
+   Click <Edit> button.
+   In the <SMTP Server> dialog, select <SSL/TLS> option in the <Connection security> options.
+   The <Port> will be changed to 465 automatically.
+
+Preparing the Certificate KeyStore
+
+   (Adapted from the Tomcat 4.1 documentation)
+
+   Hedwig currently operates only on JKS format keystores.
+   This is Java's standard "Java Keystore" format, and is the format created by the keytool command-line utility.
+   This tool is included in your JDK installed.
+
+   To import an existing certificate into your JKS keystore, 
+   please read the documentation (in your JDK documentation package) about keytool.
+
+   To create a new keystore from scratch, containing a <single self-signed Certificate>, 
+   execute the following from terminal command line.
+
+----
+keytool -genkey -alias hedwig -keyalg RSA -keypass secret -storepass secret -keystore <your_keystore_filename>
+----
+
+   Create the keystore in the conf directory, with a name like <<hedwig.jks>>.
+
+   After executing this command, you will be prompted for general information about this Certificate.
+   This information will be displayed to users when importing into the certificate store of the client, so make sure that the information provided here matches what they will expect.
+
+   <<Important>>
+
+   <In the "distinguished name">, <<set the "common name"(CN) to the DNS name of your Hedwig server>>, 
+   <the one you will connect from your mail client (like "host.example.com")>.
+
+   If everything was successful, you now have a keystore file with a Certificate that can be used by your server.
+
+   <You MUST have only one certificate in the keystore file used by Hedwig>.
+
+Installing a Certificate from a Certificate Authority
+
+   (Adapted from the Tomcat 4.1 documentation)
+
+   To obtain and install a Certificate from a Certificate Authority (like verigign.com or trustcenter.de) 
+   follow these instructions.
+
+* Creating a local Certificate Signing Request
+
+   In order to obtain a Certificate from the Certificate Authority of your choice you have to create a so called Certificate Signing Request (CSR).
+   That CSR will be used by the Certificate Authority to create a Certificate that will identify your server as "secure".
+   To create a CSR follow these steps: 
+
+   Create a local Certificate as described in the previous section. 
+
+----
+keytool -certreq -keyalg RSA -alias hedwig -file certreq.csr -keystore <your_keystore_filename>
+----
+
+   Now you have a file called certreq.csr. The file is encoded in PEM format.
+   You can submit it to the Certificate Authority (look at the documentation of the Certificate Authority website on how to do this).
+   In return you get a Certificate.
+
+* Importing the Certificate
+
+   Now that you have your Certificate you can import it into you local keystore.
+   First of all you may have to import a so called Chain Certificate or Root Certificate into your keystore (the major Certificate Authorities are already in place, so it's unlikely that you will need to perform this step).
+   After that you can proceed with importing your Certificate.
+
+** Optionally Importing a so called Chain Certificate or Root Certificate
+
+   Download a Chain Certificate from the Certificate Authority you obtained the Certificate from. 
+
+   * {{http://www.verisign.com/support/install/intermediate.html}}
+
+   * {{http://www.trustcenter.de/certservices/cacerts/en/en.htm#server}}
+
+   Import the Chain Certificate into you keystore. 
+
+----
+keytool -import -alias root -keystore <your_keystore_filename> -trustcacerts -file <filename_of_the_chain_certificate>
+----
+
+** Importing the requested Cerificate
+
+   And finally import your new Certificate (It must be in X509 format):
+
+----
+keytool -import -alias hedwig -keystore <your_keystore_filename> -trustcacerts -file <your_certificate_filename>
+----

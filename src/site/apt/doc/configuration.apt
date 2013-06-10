@@ -1,0 +1,485 @@
+                       ---------------------
+                       Configuration
+                       ---------------------
+
+Setup the database
+
+* MySQL Setup
+
+   Before starting the Hedwig IMAP server, you need to create the hedwig database in MySQL.
+   There are two files in the sql/mysql directory: hedwig-schema.sql and hedwig.mwb.
+
+   The hedwig-schema.sql file contains all the <CREATE> statements 
+   required to create the structure of the hedwig database including tables and triggers.
+
+   The hedwig.mwb file is a MySQL Workbench data model that you can open within MySQL Workbench.
+
+   To install the hedwig database, follow these steps:
+
+   * Connect to the MySQL server using the <mysql> command-line client with the following command:
+
+----
+shell> mysql -u root -p
+----
+
+     Enter your password when prompted. 
+     A non-root account can be used as long as the account has privileges to create new databases. 
+
+   * Execute the hedwig-schema.sql script to create the database structure by using the following command:
+
+----
+mysql> SOURCE D:/hedwig/sql/mysql/hedwig-schema.sql;
+----
+
+     Replace D:/hedwig/sql/mysql/hedwig-schema.sql with the path to the hedwig-schema.sql file on your system.
+
+   * Confirm that the hedwig database is installed correctly. Execute the following statements.
+     You should see output similiar to that shown here.
+
+----
+mysql> USE hedwig;
+Database changed
+
+mysql> SHOW TABLES;
++------------------+
+| Tables_in_hedwig |
++------------------+
+| acl              |
+| alias            |
+| headername       |
+| headervalue      |
+| keyword          |
+| mailbox          |
+| message          |
+| physmessage      |
+| subscription     |
+| user             |
++------------------+
+10 rows in set (0.00 sec) 
+----
+
+Managing users
+
+   You can manage users directly using SQL queries.
+   And you can also manage users using Web console.
+   See the {{{./webconsole.html}Web Console}} for more information about Web console.
+
+* Adding an user
+
+----
+INSERT INTO user(userid,passwd) VALUES ('[user.email.address]','[password]')
+----
+
+   Hedwig automatically creates the mailbox for the user on need.
+   So you don't need to create mailboxes for this user manually.
+
+* Deleting an user
+
+----
+DELETE FROM user WHERE userid='[user.email.address]'
+----
+
+Managing aliases
+
+   You can manage aliases directly using SQL queries.
+   And you can also manage aliases using Web console.
+   See the {{{./webconsole.html}Web Console}} for more information about Web console.
+
+   The alias table provides a system-wide mechanism to redirect mail for local recipients.
+
+* Adding an alias
+
+----
+INSERT INTO alias(user_id,alias) SELECT id,'[user.alias.address]' FROM user WHERE userid='[user.email.address]'
+----
+
+* Deleting an alias
+
+----
+DELETE FROM alias WHERE user_id=(SELECT id FROM user WHERE userid='[user.email.address]') AND alias='[user.alias.address]'
+----
+
+DNS configuration
+
+   Before configuring the server, make sure you configure your DNS server correctly. 
+   For SMTP to work, you must define MX records for your domain. MX stands for Mail eXchanger.
+   Simply put the MX records tell other email servers what server in your domain is responsible for handling mails.
+
+   Nslookup is a command line program that basically queries DNS-servers for information.
+   You can do all kind of DNS lookups using nslookup.
+   The text below shows how to do MX lookups. 
+   Start the command prompt and check if the response include an MX record.
+
+----
+C:> nslookup -type=mx yourdomainname.com
+Server: your-isp-dns-host
+Address: your-isp-dns-address
+
+yourdomainname.com MX preference = 10, mail exchanger = mail.yourdomainname.com
+(the line above is your MX exchanger)
+mail.yourdomainname.com internet address = your-mail-server-ip
+----
+
+Configuring the server
+
+   Hedwig has minimal configuration parameters that are controlled via the <default.properties> file.
+   You can find this file at conf directory.
+   Before starting the server, you need to configure some parameters to your environment.  
+   Enter the JDBC URL for the jdbc.url property, and adjust username/password for the database.
+
+----
+jdbc.driver=com.mysql.jdbc.Driver 
+jdbc.url=jdbc:mysql://[host]:[port]/hedwig
+jdbc.user=[username]
+jdbc.password=[password]
+jdbc.maxActive=[number]
+jdbc.maxIdle=[number]
+----
+
+   * <<jdbc.driver>>
+
+     The fully qualified Java class name of the JDBC driver to be used.
+
+   * <<jdbc.url>>
+
+     The connection URL to be passed to our JDBC driver to establish a connection.
+
+   * <<jdbc.user>>
+
+     The connection username to be passed to our JDBC driver to establish a connection.
+
+   * <<jdbc.password>>
+
+     The connection password to be passed to our JDBC driver to establish a connection.
+
+   * <<jdbc.maxActive (default: 8)>>
+
+     The maximum number of active connections that can be allocated from connection pool at the same time, or zero for no limit.
+
+   * <<jdbc.maxIdle (default: 8)>>
+
+     The maximum number of active connections that can remain idle in the pool, 
+     without extra ones being released, or zero for no limit.
+
+   In minimal configuartion, all you need to configure is the jdbc related parameters 
+   if the host name for your server is properly set.
+
+   The <default.properties> configuration file specifies minimal parameters that control the operation of the server. 
+   Most parameters have default values, and need not to be specified. 
+
+   Default values are shown after the parameter name in parentheses.
+
+   * <<data_directory (default: $home/data)>>
+
+     The directory where Hedwig data files are stored. This directory must be owned by the hedwig account, 
+     and must not be shared with non-Hedwig software. 
+
+   * <<temp_directory (default: $home/temp)>>
+
+     The directory where Hedwig temporary files are stored.
+
+   * <<queue_directory (default: $home/spool)>>
+
+     The location of Hedwig top-level queue directory.
+     This is the root directory of Hedwig MTA daemon is monitoring. 
+
+   * <<tls_keystore (default: empty)>>
+
+     The location of keystore file. This file must be in JKS format. 
+     You can create this file using keytool command-line utility included in the JDK.
+     You MUST specify this parameter if you want to use SSL/TLS for IMAP or SMTP server.
+     See the {{{./usingtls.html}Using SSL/TLS}} for more information about how to configure SSL/TLS.
+
+   * <<tls_keypass (default: empty)>>
+
+     Password for recovering keys in the keystore.
+     You need not specify this parameter if the tls_keystore parameter is not specified.
+
+   * <<tls_storepass (default: empty)>>
+
+     Password used to check the itegrity of keystore.
+     You need not specify this parameter if the tls_keystore parameter is not specified.
+
+   * <<auth_scheme (default: empty)>>
+
+     Name of the JAAS login module.
+     See the {{{./jaas.html}JAAS LoginModule}} for more information about JAAS login module. 
+
+* Configuring the IMAP server
+
+   Followings are description of all IMAP configuration parameters.
+
+   * <<compress_after (default: empty)>>
+
+     Message files are automatically compressed after the configured time.
+     The actual compression is done in a nighty cronjob, which you must set up:
+
+     Time units: y(years), m(months), d(days)
+
+     Example:
+     compress_after=3m
+
+   * <<expunge_after (default: empty)>>
+
+     Mails are expunged from mailboxes after being there the configurable time.
+     The actual expunging is done in a nightly cronjob, which you must set up:
+
+     Example:
+     expunge_after=INBOX 3m Trash 2m
+
+   * <<stop_cron_after (default: 2h)>>
+
+     Stop disk cleanup cron (which is responsible for compression of message file and expunging mails) after the configured time from it started.
+
+     Time units: h(hours), m(minutes)
+
+     Example:
+     stop_cron_after=3h
+
+   * <<default_quota (default: 0)>>
+
+     The default quota for uers in mega bytes. Specify 0 when user has no limit in quota.
+
+   * <<imap_timeout (default: 1800)>>
+
+     The IMAP socket I/O timeout value in seconds, or zero (timeout infinity).
+
+   * <<imap_trace_protocol (default: false)>>
+
+     The IMAP protocol trace mode. 
+     If true protocol trace will be printed to the output specified by the <imap_protocol_log> parameter.
+
+   * <<imap_protocol_log (default: empty)>>
+
+     The location of file used for debugging output for IMAP protocol. 
+     If empty, the standard output will be used.
+
+* Configuring the SMTP server
+
+   If you decided to use legacy MTA like Postfix, you dont need to read this section.
+   Instead see {{Configuring_MTA}} for more information about the legacy MTA configuration.
+
+   SMTP configuration parameters are also controlled via the <default.properties> file.
+   Before starting the server, you need to configure some parameters to your environment.  
+
+   Followings are description of all SMTP configuration parameters.
+
+   * <<max_retry_count (default: 3)>>
+
+     The maximal number of times that a spooled message attempts to be re-sent. 
+     If a temporary exception has been caught during transmission, 
+     the infrastucture automatically retransmits the message.
+     If a permanent exception is caught, 
+     a failure message is sent to the original message sender or postmaster.
+     The retransmission algorithm quadruples the delay with every attempt, 
+     which result in approximately 42 minutes passing between the first transmission attempt and the last transmission attempt.   
+
+   * <<message_size_limit (default: 10240000)>>
+
+     The maximal size in bytes of a message, including envelope information.
+     Specify 0 when message size has no limit.  
+
+   * <<mydomain>>
+
+     The internet domain name of this mail system. 
+     The default is to use $myhostname minus the first component.
+
+     Example:
+     mydomain=example.com
+
+   * <<myhostname>>
+
+     The internet hostname of this mail system. 
+     The default is to use the fully-qualified domain name from gethostname().
+
+     Example:
+     myhostname=host.example.com
+
+   * <<mynetworks (default: 0.0.0.0/0.0.0.0)>>
+
+     The list of trusted SMT clients that have privileges to relay mail through Hedwig.
+     Specify a list of network address, network/netmask or network/netmask bits patterns, 
+     separated by commas and/or whitespace.
+
+     Example:
+     mynetworks=123.212.190.1 123.212.180.2/255.255.255.0 123.212.170.0/24 
+
+   * <<postmaster (default: postmaster@mydomain)>>
+
+     The sender address of delivery status notification message. 
+
+     Example:
+     postmaster=postmaster@example.com 
+
+   * <<smtp_helo_name (default: $myhostname)>>
+
+     The host name to send in the SMTP EHLO or HELO command. The default value is the machine hostname. 
+
+   * <<smtp_recipient_limit (default: 0)>>
+
+     The maximum number of recipients that the Hedwig SMTP server accepts per message delivery request.
+     Specify 0 when recipients count has no limit.  
+
+   * <<smtp_sasl_auth_enable (default: no)>>
+
+     Enable SASL authentication in the Hedwig SMTP server. 
+     By default, the Hedwig SMTP server does not use authentication.
+
+   * <<smtp_timeout (default: 300000)>>
+
+     The SMTP socket I/O timeout value in milliseconds, or zero (timeout infinity).
+
+   * <<smtp_trace_protocol (default: false)>>
+
+     The SMTP protocol trace mode. If true protocol trace will be printed to the console.
+
+   * <<smtp_protocol_log (default: empty)>>
+
+     The location of file used for debugging output for SMTP protocol. 
+     If empty, the standard output will be used.
+
+Configuring MTA
+
+   If you decided to use Hedwig's own MTA, you don't need to read this section. 
+   Instead see the {{Configuring_the_SMTP_server}} for more information about the MTA configuration.
+
+* LDA with Postfix
+
+   Hedwig LDA is easy to configure with Postfix virtual domains support.
+   Hedwig supports two delivery methods PIPE and LMTP.
+
+** Using piped delivery
+
+   Add hedwig-pipe service in </etc/postfix/master.cf>:
+
+----
+hedwig-pipe unix - n n - - pipe
+  flags=DRhu user=hedwig/hedwig argv=/home/hedwig/bin/deliver.sh ${sender} ${recipient}
+----
+
+   Replace hedwig above with your virtual mail user account.
+
+   Then set virtual_transport to hedwig-pipe in </etc/postfix/main.cf>.
+
+----
+default_destination_recipient_limit = 50
+virtual_mailbox_domains = your.domain.here
+virtual_transport = hedwig-pipe
+----
+
+   And remember to run
+
+   postfix reload
+
+** Using LMTP delivery
+
+   LMTP will be supported in near future.
+
+   Add hedwig-lmtp service in </etc/postfix/master.cf>:
+
+----
+hedwig-lmtp unix - - n - - lmtp
+----
+
+   Then set virtual_transport to hedwig-lmtp in </etc/postfix/main.cf>.
+
+----
+virtual_transport = hedwig-lmtp:<host>:<port>
+----
+
+   Comment the bean definitions with followings IDs in the <applicationContext.xml>.
+   (smtp.server, smtps.server, smtp.taskExecutor)
+
+Configuring the client
+
+* Configuring MS Outlook 2007
+
+   Use the following method to configure Outlook as an IMAP4 client.
+
+   [[1]] Start Outlook.
+
+   [[2]] On the <Tools> menu, click <Account Settings>.
+   
+   [[3]] Click <New>.
+
+   [[4]] Click <Microsoft Exchange, POP3, IMAP, or HTTP>, and then click <Next>.
+
+   [[5]] In the <Auto Account Setup> dialog box, 
+     click to select the <Manually configure server settings or additional server types> check box, 
+     and then click <Next>.
+
+   [[6]] Click <Internet E-Mail>, and then click <Next>.
+
+   [[7]] In the <Server Information> section, select <IMAP> for <Account Type>.
+
+   [[8]] In the <Your Name> box, enter your name exactly as you want it to appear to recipients.
+
+   [[9]] In the <E-mail Address> box, type your e-mail address.
+
+   [[10]] In the <User Name> box, type your your account name.
+     If the server supports multiple domains, then type your e-mail address not your account name.
+
+   [[11]] In the <Password> box, type your password.
+
+   [[12]] In the <Incoming mail server> box, type the name of your IMAP4 server.
+
+   [[13]] In the <Outgoing mail server (SMTP)> box, type the name of your SMTP server.
+
+   [[14]] Click <Next> after you have completed entering this configuration information, and then click <Finish>.
+
+* Configuring Mozilla Thunderbird 3.1
+
+   Use the following method to configure Thunderbird as an IMAP4 client.
+
+   [[1]] Start Thunderbird
+
+   [[2]] On the <Tools> menu, click <Account Settings>.
+
+   [[3]] Click the <Account Actions> button and select <Add Mail Account>.
+
+   [[4]] In the <Your name> box, enter your name exactly as you want it to appear to recipients.
+
+   [[5]] In the <Email address> box, type your e-mail address.
+
+   [[6]] In the <Password> box, type your password.
+
+   [[7]] Click <Continue>.     
+     Thunderbird will try to determine your account settings based on the domain portion of your email address 
+     (that is, the portion after the "@" symbol). 
+     Press the <Stop> button to abort the lookup, 
+     then edit the server names, port and IMAP, and then press <Manual Configuration> to manually set up the the account.
+     Note that it's important that you set server names, port and IMAP before clicking <Manual Config>.
+
+   [[8]] In the <Account Settings> dialog, in the left pane, 
+     select <Server Settings> option under your new account.
+
+   [[9]] In the right pane, make sure the <User Name> box contains your account name.
+     If the server supports multiple domains, then type your e-mail address not your account name.
+
+Configuration File Example
+
+   The following is a very simple example of a production <default.properties> file.
+   The line numbers shown are provided for reference only and are not included in the actual file.
+
+----
+1.        # Database connection information
+2.
+3.        # MySQL Database connection
+4.        jdbc.driver=com.mysql.jdbc.Driver
+5.        jdbc.url=jdbc:mysql://localhost/hedwig
+6.        jdbc.user=hedwig
+7.        jdbc.password=s3cret
+8.        jdbc.maxActive=120
+9.        jdbc.maxIdle=30
+10.
+11.       # Network information
+12.       mydomain=hedwig.org
+13.       myhostname=mail.hedwig.org
+----
+
+   Lines 1 and 3 are comments.
+   Line 4 through 9 are for database connection information.  
+
+   Line 11 is a comment.
+   Line 12 specifies the internet domain name of the mail system.
+   Line 13 specifies the internet hostname of the mail system.

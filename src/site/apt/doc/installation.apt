@@ -1,0 +1,60 @@
+                       ---------------------
+                       Installation
+                       ---------------------
+
+Pre-Installation Requirements
+
+   * Java Developer Kit (JDK) 1.5.x or greater for compiling/building
+
+   * The JAVA_HOME environment variable must be set to the directory where the JDK is installed, e.g., c:\Program Files\jdk.1.5.0_22. 
+
+   * Maven 1.0.2 or greater (required when installing source)
+
+Checking out the sources with Subversion
+
+   You need a {{{http://subversion.tigris.org/}Subversion}} client to access the Hedwig source repository.
+   Once you have the Subversion client installed you can checkout the main Hedwig source tree with the following command or its equivalent in the client you are using: 
+
+----
+svn co https://hwmail.svn.sourceforge.net/svnroot/hwmail hwmail
+----
+
+   The above checkout will create a subdirectory named hwmail that contains the latest Hedwig sources. 
+
+Source Installation
+
+   This procedure explains how to install from the source distribution.
+
+   * Extract source from the ZIP file into a directory of your choice.
+     For a source distribution, the file name will be similar to: <hedwig-x.x-src.zip>.
+
+   * Build Hedwig using Maven and Java 1.5.
+     The method of building Hedwig is the following:
+
+----
+mvn clean package
+----
+
+     If the above build fails on some tests, type the following:
+
+----
+mvn clean package -Dmaven.test.skip=true
+----
+
+   * If you prefer to use an IDE, then you can auto-generate the IDE's project file using maven plugins:
+
+----
+mvn eclipse:eclipse
+----
+
+   * Proceed to the {{Binary_Installation}} with binary distribution file in <assembly/target> directory.
+
+{Binary Installation}
+
+   * Extract the binary distribution file into a directory of your own.
+     For a windows binary distribution, the filename will be similar to: <hedwig-x.x.zip>.
+     For a unix binary distribution, the filename will be similar to: <hedwig-x.x.tar.gz>.
+
+   * Proceed to the {{{./configuration.html}Configuration}} chapter of this document.
+
+   * Proceed to the {{{./running.html}Running the server}} chapter of this document.

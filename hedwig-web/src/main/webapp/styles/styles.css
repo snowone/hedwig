@@ -1,0 +1,124 @@
+body {
+  font-family:trebuchet ms, verdana, arial, tahoma;
+  font-size:90%;
+  color:#888;
+  background-color:white;
+  line-height:180%;
+  margin:0;
+  padding:0;
+  text-align:center;
+}
+.text-left   { text-align:left !important; }
+.text-center { text-align:center !important; }
+.text-right  { text-align:right !important; }
+#main {	
+	min-width:740px; 
+	min-height:400px; 
+	_height:400px;
+}
+.main-basic {
+	padding:0 10px 0 10px;	
+}
+.xmenu {
+	position:relative;
+	_height:1%;
+	text-align:right; 
+	height:22px;
+}
+.xmenu li {
+	display:inline;
+}
+.xmenu a {
+	margin-right:8px;
+}
+.xmenu img {
+	padding-left:3px;
+}
+.xmenu a:hover, .xmenu a:active {
+	text-decoration:none; 
+}
+.xlist {
+	margin:10px 0 10px 0;
+	padding-bottom:20px;
+	margin-bottom:20px;	
+	position:relative;
+	width:100%;	
+}
+.xlist table {
+	border-collapse:collapse;
+	width:100%;
+}
+.xlist table caption {
+	display:none;
+}
+.xlist table tbody tr.hover {
+	background:#f9f9f9;
+}
+.xlist table th {
+	white-space:nowrap; 
+	word-break:break-all;
+	text-align:center;	
+	font-weight:bold;
+	line-height:14px;
+	padding:7px 5px 9px 5px;
+	border-top:2px solid #9cc0eb;	
+	background:url(../images/header_bg.gif) repeat-x left bottom;	
+}
+.xlist table th a, .xlist table th a:link, .xlist table th a:visited, .xlist table th a:active {
+	text-decoration:none;
+	color:#555555;
+}
+.xlist table td {
+	word-break:break-all;
+	text-align:center;	
+	line-height:14px;
+	padding:7px 5px 6px 5px;
+	*padding:5px 5px 4px 5px;	
+	border-bottom:1px solid #E6E6E6;		
+}
+.xlist .icon img { 
+	vertical-align:top;
+}
+.xdetail {
+	position:relative;	
+	margin:10px 0 10px 0;
+	width:100%;	
+	border-top:2px solid #9cc0eb;		
+}
+.xdetail table {
+	width:100%;
+	border-collapse:collapse;
+}
+.xdetail table caption {
+	display:none;
+}
+.xdetail table th {
+	font-weight:bold;
+	height:18px;
+	text-align:right;
+	padding:4px 5px 3px 5px;
+	border:1px solid #E1E1E1;	
+	border-top:none;	
+	background-color:#F8F8F8;			
+}
+.xdetail table td {
+	height:18px;
+	text-align:left;
+	padding:4px 5px 3px 5px;
+	border:1px solid #E1E1E1;			
+	border-top:none;	
+}
+.xdetail td textarea {
+	margin:2px;
+}
+.xdetail input[type=text], .xdetail input[type=password] {
+	width:200px;
+}
+.xdetail input[type=file] {
+	width:500px;
+}
+.pager {
+	background-color:#F9F9F9;
+	border-bottom:1px solid #c9c9c9;
+	height:30px;	
+}	

@@ -1,0 +1,98 @@
+                       ---------------------
+                       JAAS LoginModule
+                       ---------------------
+
+Introduction
+
+   Hedwig provides pluggable security through JAAS login module.
+   Using this mechanism, you can use legacy database or LDAP directory to verify 
+   if the given password is correct for the user. 
+   For general information on JAAS see the 
+   {{{http://java.sun.com/j2se/1.4.2/docs/guide/security/jaas/tutorials/GeneralAcnOnly.html"}JAAS Authentication Tutorial}} and the 
+   {{{http://java.sun.com/j2se/1.4.2/docs/guide/security/jaas/JAASRefGuide.html"}reference guide}}.
+
+Configuring the JAAS LoginModule
+
+   JAAS configures itself using a configuration provider.
+   The default JAAS configuration provider locates its configuration file by looking at 
+   - among other things - the <<java.security.auth.login.config>> system property.
+   In Hedwig this property locates the <<conf/login.config>> file.
+   The <<login.config>> file lists one or more login module configurations.
+   In order to use JAAS login module you must set <<auth_scheme>> parameter from <<default.properties>> file 
+   to the one of login module configurations in the <<login.config>> file.
+
+   Take a look at the following configuration for example: <<default.properties>>
+
+----
+auth_scheme=PropertiesLogin
+----
+
+and <<login.config>>
+
+----
+PropertiesLogin {
+	com.hs.mail.security.login.PropertiesLoginModule required
+		file="users.properties"
+		;
+};
+----
+
+SQL Authentication
+
+   Legacy database can be used to verify password.
+   The <query> setting contains the SQL query to look up the password.
+   If the passwords are in plaintext format, you can omit the <encoder> option.
+   Otherwise you must specify which password encoder to use. 
+   See the {{Password_Schemes}} for more information about password encoder.
+
+----
+JdbcLogin {
+	com.hs.mail.security.login.JdbcLoginModule required
+		debug=true
+		driver="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:localhost:1521:xe"
+		username="legacy"
+		password="s3cret"
+		query="SELECT passwd FROM user WHERE mail = ?"
+		encoder=com.hs.mail.security.login.MD5PasswordEncoder
+		;
+};
+----
+
+LDAP Authentication
+
+   LDAP directory can be used to verify password.
+
+----
+LdapLogin {
+	com.hs.mail.security.login.JndiLoginModule required
+		context.factory=com.sun.jndi.ldap.LdapCtxFactory
+		url="ldap://ldap.domain.com:389"
+		username="cn=admin,ou=User,dc=domain,dc=com"
+		password=password
+		authentication=simple
+		base="ou=User,dc=domain,dc=com" 
+		searchFilter="(mail={0})"
+		subtree=true 
+		;
+};
+----
+
+Password Schemes
+
+   Password scheme means the format in which the password is stored in database.
+   Followings are password schemes supported by Hedwig and class name of password encoder 
+   which implements its encryption algorithm.
+
+   * <<PLAIN>>: Password is in plaintext. This is the default password scheme.
+
+     com.hs.mail.security.login.PlaintextPasswordEncoder
+
+   * <<CRYPT>>: Traditional DES-crypted password in /etc/passwd. (e.g. "password" = -1d2n7Q0.r54s)
+
+     com.hs.mail.security.login.CryptPasswordEncoder
+
+   * <<MD5>>: MD5 based salted password hash nowadays commonly used in /etc/shadow. 
+     (e.g. "password" = $1$-1509075$tgA5M34nElt1GjRYRGT36.)
+
+     com.hs.mail.security.login.MD5PasswordEncoder

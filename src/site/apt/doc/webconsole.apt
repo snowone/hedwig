@@ -1,0 +1,116 @@
+                       ---------------------
+                       Web Console
+                       ---------------------
+
+Overview
+
+   The Hedwig Web Console is a web based administration tool for working with Hedwig Mail server.
+
+[webconsole.png]
+
+Running the Web Console
+
+   Download the hedwig-web-{version}.war file and install the war distribution.
+   Then you can point your web browser at the URL.
+
+   * http://localhost:8080/hedwig-web-{version}/
+
+   And hey presto, you should now have the Web Console running.
+
+Configuring the Web Console
+
+   Copy <default.properties> from Hedwig server's <conf> directory to <WEB-INF>.
+   Web Console is used by limited number of users, 
+   so change the <jdbc.maxActive> and <jdbc.maxIdle> value to smaller value.  
+
+   To enable access to the Web Console, 
+   you must create a new username/password combination and associate the role name <manager> with it.
+   Web Console defaults to a properties file stored at <WEB-INF/users.properties>, 
+   which can be edited with any text editor.
+   This file might look like this:
+
+----
+admin=s3cret:manager
+----
+
+   which defines the username and password used by this individual to log on, 
+   and the role names he or she is associated with.
+
+Using the Web Console
+
+* Accounts
+
+   You can create, update or delete accounts in this menu.
+
+   And you can import multiple accounts using <Import> menu.
+   Accounts are imported using a colon delimited text file.
+   The following fields are required for accounts import.
+
+*--------------+----------------+
+|| Field       || Form          |
+*--------------+----------------+
+| Address      | The email address of the account.
+*--------------+----------------+
+| Password     | The password of the account.
+*--------------+----------------+
+| Maximum size | The maximum disk space that the account may use.
+*--------------+----------------+
+| Forwarding   | The email address you want to forward messages to.
+*--------------+----------------+
+Import file format
+
+   If fields are empty or omitted, default value is used for that field.  
+   Following is a sample import file.
+
+----
+joe@domain.com:s3cret:1024:joe@gmail.com
+bill@domain.com
+jane@domain.com:tiger:
+kara@domain.com:::nicole@nate.com
+----
+
+* Fetch Account
+
+   Hedwig can download messages from POP3 accounts on other servers.
+   Email downloads are delivered to the selected account.
+   You can fetch external account from <Fetch> menu in the <Edit Account> page. 
+
+   * <<Name>>
+
+     The name of the external account. The name is in free text and can be anything you like.
+
+   * <<Protocol>>
+
+     Currently only POP3. Support for other protocols, such as IMAP, may be added in future.
+
+   * <<Server address & TCP Port>>
+
+     The hostname and TCP/IP port of the server should connect to when downloading messages.
+
+   * <<User name & Password>>
+
+     The user name and password the server should use when login to the external server.
+     This should be the same information that you normally enter in your email client when login to that account.
+
+   * <<SSL>>
+
+     If the external server requires an encrypted connection(SSL), check the <Use SSL> option.
+
+   * <<Settings>>
+
+     If you select <Delete messages immediately>, 
+     server will delete the messages from the external server right after downloading them.
+     The opposite, <Do not delete messages>, causes server not to delete messages on the external server.
+
+* Aliases
+
+   You can create, update or delete aliases in this menu.
+
+   Aliases are used to forward email from one specific address to another.
+   Imagine them as addresses without a mailbox; instead of having their own mailbox, 
+   they store received messages in another account's mailbox.
+   This can be useful if you want to monitor several email addresses, 
+   but only have one real email account on the server.
+   For example, you may want to receive email messages sent to webmaster@domain.com, feedback@domain.com and yourname@domain.com, 
+   but you just want to create the webmaster@domain.com account instead of 3 different accounts.
+   Then feedback@domain.com and yourname@domain.com can be made aliases of webmaster@domain.com.

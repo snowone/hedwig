@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+  -->
+<document>
+	<properties>
+		<title>Welcome to Hedwig Mail Server</title>
+	</properties>
+<body>
+	<section name="Hedwig Mail Server - The Open Source IMAP/SMTP Server for Java">
+		<p>
+			Hedwig is an open source IMAP, SMTP server written in Java, designed with ease of installation and configuration in mind.
+			Hedwig enables storage of mail message headers in a relational database and mail messages in a file system. 
+			Currently MySQL can be used as storage backend.
+		</p>
+		<subsection name="Features">
+			<ul>
+				<li>100% pure Java capable of running on Java 1.5 onwards</li>
+				<li>Based on Java NIO framework (Netty)</li>
+				<li>A normal MTA (Currently Postfix) can be used for accepting messages. The MTA hands the messages using a pipe interface. LMTP (Local Mail Transport Protocol) support is in progress.</li>
+				<li>Multiple virtual domains</li>
+				<li>Built in SSL encryption</li>
+				<li>Pluggable Authentication Module(PAM) using JAAS</li>
+				<li>Automated Message File Compression</li>
+				<li>Authenticated SMTP (SMTP AUTH)</li>
+				<li>Message filtering using Sieve scripts</li>
+				<li>Web based administration console</li>
+			</ul>
+		</subsection>
+	</section>
+</body>
+</document>

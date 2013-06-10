@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+
+	<!-- =================================================================== -->
+	<!-- IMAP SERVER -->
+	<!-- =================================================================== -->
+	<bean id="imap.server" class="com.hs.mail.imap.server.ImapServer" depends-on="config">
+		<property name="port" value="143"/>
+	</bean>
+
+	<!-- Use the following to enable SSL/TLS for IMAP -->
+	<!-- 
+	<bean id="imaps.server" class="com.hs.mail.imap.server.ImapServer" depends-on="config">
+		<property name="useTLS" value="true"/>
+		<property name="port" value="993"/>
+	</bean>
+	-->
+	
+	<!-- =================================================================== -->
+	<!-- PROPERTY PLACEHOLDER -->
+	<!-- =================================================================== -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	        <value>file:${app.home}/conf/default.properties</value>
+	    </property>
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- LOGGING -->
+	<!-- =================================================================== -->
+	<bean id="log4jInitialization" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="org.springframework.util.Log4jConfigurer" />
+		<property name="targetMethod" value="initLogging" />
+		<property name="arguments">
+			<list>
+				<value>file:${app.home}/conf/log4j.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- APPLICATION CONTEXT AWARE COMPONENT -->
+	<!-- =================================================================== -->
+	<bean id="componentManager" class="com.hs.mail.container.config.ComponentManager"/>
+
+	<!-- =================================================================== -->
+	<!-- GLOBAL CONFIGURATION -->
+	<!-- =================================================================== -->
+	<bean id="config" class="com.hs.mail.container.config.Config" depends-on="log4jInitialization">
+		<property name="properties" ref="def.props" />
+	</bean>
+
+	<bean id="def.props" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location" value="file:${app.home}/conf/default.properties" />
+	</bean>
+	
+	<!-- =================================================================== -->
+	<!-- JAAS LOGIN CONFIGURATION -->
+	<!-- =================================================================== -->
+	<bean id="jaasLoginConfig" class="com.hs.mail.security.config.JaasLoginSupport">
+		<property name="location" value="file:${app.home}/conf/login.config" />
+	</bean>
+	
+	<!-- =================================================================== -->
+	<!-- FACADE FOR DAOS -->
+	<!-- =================================================================== -->
+	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
+		<property name="transactionManager" ref="txManager"/>
+	</bean>
+	
+	<bean id="mailboxManager" class="com.hs.mail.imap.mailbox.DefaultMailboxManager">
+		<property name="transactionManager" ref="txManager"/>
+		<property name="fetchDataCache" ref="fdCache" />
+		<property name="headerCache" ref="hdCache" />
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- DATASOURCE DEFINITION -->
+	<!-- =================================================================== -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <property name="maxWait" value="10000"/>
+        <property name="minEvictableIdleTimeMillis" value="600000"/>
+        <property name="defaultAutoCommit" value="false"/>
+    </bean>
+    
+	<!-- =================================================================== -->
+	<!-- TRANSACTION MANAGER -->
+	<!-- =================================================================== -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- DATA ACCESS OBJECTS DEFINITIONS -->
+	<!-- =================================================================== -->
+    <bean id="abstractDao" abstract="true" class="com.hs.mail.imap.dao.AbstractDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<bean id="mailboxDao" parent="abstractDao" class="com.hs.mail.imap.dao.MySqlMailboxDao"/>
+	<bean id="messageDao" parent="abstractDao" class="com.hs.mail.imap.dao.MySqlMessageDao"/>
+	<bean id="searchDao"  parent="abstractDao" class="com.hs.mail.imap.dao.MySqlSearchDao"/>
+	<bean id="userDao"    parent="abstractDao" class="com.hs.mail.imap.dao.MySqlUserDao"/>
+
+	<!-- =================================================================== -->
+	<!-- DAO FACTORY -->
+	<!-- =================================================================== -->
+	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
+		factory-method="getInstance">
+		<property name="mailboxDao" ref="mailboxDao"/>
+		<property name="messageDao" ref="messageDao"/>
+		<property name="searchDao"  ref="searchDao"/>
+		<property name="userDao"    ref="userDao"/>
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- DATA CACHE DEFINITIONS -->
+	<!-- =================================================================== -->
+	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="${app.home}/conf/ehcache-failsafe.xml" />
+	</bean>
+
+	<bean id="fdCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="cacheName" value="fdCache" />
+	</bean>
+
+	<bean id="hdCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="cacheName" value="hdCache" />
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- THE SCHEDULER -->
+	<!-- =================================================================== -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="quartzProperties">
+			<props>
+				<prop key="org.quartz.threadPool.class">org.quartz.simpl.SimpleThreadPool</prop>
+				<prop key="org.quartz.threadPool.threadCount">2</prop>
+			</props>
+		</property>
+		<property name="triggers">
+			<list>
+				<ref bean="cronTrigger" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="diskCleanupJob" />
+		<!-- Run every day at 3 AM -->
+		<property name="cronExpression" value="0 0 3 * * ?" />
+	</bean>
+
+	<bean id="diskCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.hs.mail.imap.schedule.DiskCleanupJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="mailboxManager" value-ref="mailboxManager"/>
+			</map>
+		</property>
+	</bean>
+
+	<!-- =================================================================== -->
+	<!-- PROFILER -->
+	<!-- =================================================================== -->
+    <!--
+    <bean id="profiler" class="com.hs.mail.aop.SimpleProfiler">
+		<property name="logName" value="profile" />
+    </bean>
+
+	<aop:config>
+		<aop:aspect ref="profiler">
+			<aop:pointcut id="pointcut1"
+				expression="execution(public * com.hs.mail.imap.mailbox.MailboxManager.*(..))" />
+			<aop:around pointcut-ref="pointcut1" method="profile" />
+		</aop:aspect>
+	</aop:config>
+	-->
+	
+</beans>

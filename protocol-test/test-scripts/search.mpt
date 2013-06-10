@@ -1,0 +1,29 @@
+#
+# This script is a basic IMAP SEARCH.
+# 
+S: \* OK Hedwig ready.
+C: A1 LOGIN angelove 1
+S: A1 OK LOGIN completed
+C: A2 SELECT INBOX
+S: \* FLAGS \(\\Answered \\Flagged \\Deleted \\Seen \\Draft\)
+S: \* \d+ EXISTS
+S: \* \d+ RECENT
+S: \* OK \[UNSEEN \d+\] First unseen
+S: \* OK \[UIDNEXT \d+\] Next UID
+S: \* OK \[UIDVALIDITY \d+\] UID Valid
+S: \* OK \[PERMANENTFLAGS \(\\Answered \\Flagged \\Deleted \\Seen \\Draft\)\] Limited
+S: A2 OK \[READ-WRITE\] SELECT completed
+C: A3 SEARCH 1:5
+S: \* SEARCH 1 2 3 4 5
+S: A3 OK SEARCH completed
+C: A4 SEARCH 1:5 1 3
+S: A4 OK SEARCH completed
+C: A5 SEARCH 1:5 NOT 4
+S: \* SEARCH 1 2 3 5
+S: A5 OK SEARCH completed
+C: A6 SEARCH 1:5 3:5 NOT 4
+S: \* SEARCH 3 5
+S: A6 OK SEARCH completed
+C: Z0 LOGOUT
+S: \* BYE IMAP4rev1 Server logging out.
+S: Z0 OK LOGOUT completed

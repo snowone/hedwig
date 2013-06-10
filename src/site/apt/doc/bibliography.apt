@@ -1,0 +1,53 @@
+                       ---------------------
+                       References
+                       ---------------------
+
+RFC's
+
+   * <RFC 1869: SMTP Service Extensions>
+
+   * <RFC 2033: Local Mail Transfer Protocol>
+
+   * <RFC 2087: IMAP4 QUOTA extension>
+
+   * <RFC 2088: IMAP4 non-synchronizing literals>
+
+   * <RFC 2180: IMAP4 Multi-Accessed Mailbox Practice>
+
+   * <RFC 2298: An Extensible Message Format for Message Disposition Notifications>
+
+   * <RFC 2342: IMAP4 Namespace>
+
+   * <RFC 2595: Using TLS with IMAP, POP3 and ACAP>
+
+   * <RFC 2683: IMAP4 Implementation Recommendations>
+
+   * <RFC 2821: Simple Mail Transfer Protocol>
+
+   * <RFC 2971: IMAP4 ID extension>
+
+   * <RFC 3028: Sieve: A Mail Filtering Language>
+
+   * <RFC 3348: The Internet Message Access Protocol (IMAP4) Child Mailbox Extension>
+
+   * <RFC 3461: Simple Mail Transfer Protocol (SMTP) Service Extension for Delivery Status Notifications (DSNs)>
+
+   * <RFC 3463: Enhanced Mail System Status Codes>
+
+   * <RFC 3464: An Extensible Message Format for Delivery Status Notifications>
+
+   * <RFC 3501: INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1>
+
+   * <RFC 3502: Internet Message Access Protocol (IMAP) - MULTIAPPEND Extension>
+
+   * <RFC 4314: IMAP4 Access Control List (ACL) Extension>
+
+   * <RFC 4315: Internet Message Access Protocol (IMAP) - UIDPLUS extension>
+
+   * <RFC 4409: Message Submission for Mail>
+
+   * <RFC 5255: Internet Message Access Protocol Internationalization>
+
+   * <RFC 5256: Internet Message Access Protocol - SORT and THREAD Extensions>
+
+   * <RFC 5321: Simple Mail Transfer Protocol>

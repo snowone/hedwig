@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <!-- General description of your web application -->
+
+    <display-name>Hedwig Console</display-name>
+    <description>Hedwig Console</description>
+
+    <context-param>
+      <param-name>webAppRootKey</param-name>
+      <param-value>hedwig-wc</param-value>
+    </context-param>
+
+    <!--
+    - Location of the Log4J config file, for initialization and refresh checks.
+    - Applied by Log4jConfigListener.
+    -->
+    <context-param>
+      <param-name>log4jConfigLocation</param-name>
+      <param-value>/WEB-INF/log4j.properties</param-value>
+    </context-param>
+
+    <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>/WEB-INF/applicationContext.xml</param-value>
+    </context-param>
+
+    <!--
+    - Configures Log4J for this web app.
+    - As this context specifies a context-param "log4jConfigLocation", its file path
+    - is used to load the Log4J configuration, including periodic refresh checks.
+    -
+    - Would fall back to default Log4J initialization (non-refreshing) if no special
+    - context-params are given.
+    -
+    - Exports a "web app root key", i.e. a system property that specifies the root
+    - directory of this web app, for usage in log file paths.
+    - This web app specifies "esmart.root" (see log4j.properties file).
+    -->
+    <listener>
+      <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
+
+    <listener>
+      <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <servlet>
+      <servlet-name>springapp</servlet-name>
+      <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+      <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/applicationContext.xml</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- Servlet Mappings -->
+
+    <servlet-mapping>
+      <servlet-name>springapp</servlet-name>
+      <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+
+    <!--
+        Default session timeout (in minutes)
+        Note: the imap connection will time-out too, so consider this value
+        to be lower then the imap time-out
+     -->
+    <session-config>
+      <session-timeout>1440</session-timeout>
+    </session-config>
+
+	<!-- Ensure that index.jsp and index.html is handled as index file -->
+    <welcome-file-list>
+      <welcome-file>index.jsp</welcome-file>
+      <welcome-file>index.html</welcome-file> 
+    </welcome-file-list>
+
+</web-app>
+

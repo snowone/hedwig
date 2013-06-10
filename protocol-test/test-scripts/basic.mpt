@@ -1,0 +1,10 @@
+#
+# This script is a basic IMAP LOGIN/LOGOUT.
+# 
+S: \* OK Hedwig ready.
+C: A1 LOGIN angelove 1
+S: A1 OK LOGIN completed
+C: Z0 LOGOUT
+S: \* BYE IMAP4rev1 Server logging out.
+S: Z0 OK LOGOUT completed
+

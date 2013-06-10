@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:lang="http://www.springframework.org/schema/lang" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd">
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	        <value>WEB-INF/default.properties</value>
+	    </property>
+	</bean>
+
+	<bean id="def.props" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location" value="WEB-INF/default.properties" />
+	</bean>
+
+	<bean id="config" class="com.hs.mail.container.config.Config">
+		<property name="properties" ref="def.props" />
+		<property name="initData" value="false" />
+	</bean>
+
+	<!-- ========================= VIEW DEFINITIONS ========================= -->
+	
+	<bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="order" value="2" />
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="com.hs.mail.web.exception.KeyedException">keyederror</prop>
+			</props>
+		</property>
+		<property name="defaultErrorView" value="error" />
+		<property name="exceptionAttribute" value="error" />
+		<property name="defaultStatusCode" value="500" />
+	</bean>
+	
+	<!-- ========================= MAPPING DEFINITIONS ========================= -->
+
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="console.do">console</prop>
+				<prop key="account.do">account</prop>
+				<prop key="alias.do">alias</prop>
+				<prop key="fetch.do">fetch</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
+
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>viewcontent</value>
+				<value>errormessages</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- ========================= CONTROLLER RELATED DEFINITIONS ========================= -->
+
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver" />
+
+	<bean id="themeResolver" class="org.springframework.web.servlet.theme.CookieThemeResolver">
+		<property name="defaultThemeName" value="spring" />
+	</bean>
+
+	<bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
+	<bean id="themeChangeInterceptor" class="org.springframework.web.servlet.theme.ThemeChangeInterceptor" />
+
+	<bean class="org.springframework.scripting.support.ScriptFactoryPostProcessor">
+		<!--
+			If the value of the following property is -1, 
+			then the change of the script will not refresh automatically.
+			If you use auto-refresh mode, then set the value to 5000.
+		-->
+		<property name="defaultRefreshCheckDelay" value="5000" />
+	</bean>
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+
+	<!--=================== CONTROLLER DEFINITIONS ============================-->
+
+	<bean id="actons" class="org.springframework.web.servlet.mvc.multiaction.ParameterMethodNameResolver">
+		<property name="paramName" value="acton" />
+		<property name="defaultMethodName" value="error" />
+	</bean>
+
+	<bean id="console" class="com.hs.mail.web.controller.WebConsole">
+		<property name="methodNameResolver">
+			<ref bean="actons" />
+		</property>
+		<property name="userManager" ref="userManager"/>
+	</bean>
+
+	<bean id="account" class="com.hs.mail.web.controller.AccountFormController">
+		<property name="formView" value="account"/>
+		<property name="successView" value="success"/>
+		<property name="commandName" value="User"/>
+		<property name="commandClass" value="com.hs.mail.imap.user.User"/>
+		<property name="sessionForm" value="true"/>
+		<property name="userManager" ref="userManager"/>
+	</bean>
+
+	<bean id="alias" class="com.hs.mail.web.controller.AliasFormController">
+		<property name="formView" value="alias"/>
+		<property name="successView" value="success"/>
+		<property name="commandName" value="Alias"/>
+		<property name="commandClass" value="com.hs.mail.imap.user.Alias"/>
+		<property name="sessionForm" value="true"/>
+		<property name="userManager" ref="userManager"/>
+	</bean>
+
+	<bean id="fetch" class="com.hs.mail.web.controller.FetchAccountFormController">
+		<property name="formView" value="fetchaccount"/>
+		<property name="successView" value="success"/>
+		<property name="commandName" value="FetchAccount"/>
+		<property name="commandClass" value="com.hs.mail.web.fetchmail.FetchAccount"/>
+		<property name="sessionForm" value="true"/>
+	</bean>
+
+	<bean id="jaasLoginConfig" class="com.hs.mail.security.config.JaasLoginSupport">
+		<property name="location" value="WEB-INF/login.config" />
+	</bean>
+
+	<!--=================== DAO DEFINITIONS ============================-->
+
+	<bean id="userManager" class="com.hs.mail.imap.user.DefaultUserManager">
+		<property name="transactionManager" ref="txManager"/>
+	</bean>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <property name="maxWait" value="10000"/>
+        <property name="minEvictableIdleTimeMillis" value="600000"/>
+        <property name="defaultAutoCommit" value="false"/>
+    </bean>
+    
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+    <bean id="abstractDao" abstract="true" class="com.hs.mail.imap.dao.AbstractDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<bean id="mailboxDao" parent="abstractDao" class="com.hs.mail.imap.dao.MySqlMailboxDao"/>
+	<bean id="messageDao" parent="abstractDao" class="com.hs.mail.imap.dao.MySqlMessageDao"/>
+	<bean id="searchDao"  parent="abstractDao" class="com.hs.mail.imap.dao.MySqlSearchDao"/>
+	<bean id="userDao"    parent="abstractDao" class="com.hs.mail.imap.dao.MySqlUserDao"/>
+
+	<bean id="daoFactory" class="com.hs.mail.imap.dao.DaoFactory"
+		factory-method="getInstance">
+		<property name="mailboxDao" ref="mailboxDao"/>
+		<property name="messageDao" ref="messageDao"/>
+		<property name="searchDao"  ref="searchDao"/>
+		<property name="userDao"    ref="userDao"/>
+	</bean>
+	
+</beans>

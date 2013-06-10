@@ -1,0 +1,296 @@
+                       ---------------------
+                       Administration
+                       ---------------------
+
+Entity Relationship Model
+
+* Graphical overview of tables
+
+[schema.png]
+
+* Tables in Hedwig
+
+   This is a more detailed description of the tables in hedwig in alphabetic order.
+
+** acl
+
+   Defines Access Control List for shared mailboxes. IMAP4 ACL extension is defined in RFC 2086.
+
+*------------+------------*--------------+
+|| Attribute || Data Type || Description |
+*------------+------------*--------------+
+| user_id    | BIGINT     | First primary key and foreign key referencing user.id.
+*------------+------------*--------------+
+| mailboxid  | BIGINT     | Second primary key and foreign key referencing mailbox.mailboxid.
+*------------+------------*--------------+
+| lookup     | CHAR       | Mailbox is visible to LIST/LSUB commands, SUBSCRIBE mailbox.
+*------------+------------*--------------+
+| read       | CHAR       | SELECT the mailbox, perform STATUS
+*------------+------------*--------------+
+| seen       | CHAR       | Set or clear \SEEN flag via STORE, also set them during APPEND/COPY.
+*------------+------------*--------------+
+| write      | CHAR       | Set or clear other than \SEEN and \DELETED via STORE, also set them during APPEND/COPY.
+*------------+------------*--------------+
+| insert     | CHAR       | Perform APPEND, COPY into mailbox.
+*------------+------------*--------------+
+| post       | CHAR       | Send mail to submission address for mailbox.
+*------------+------------*--------------+
+| create     | CHAR       | CREATE new sub-mailboxes in any implementation-defined hierarchy, parent mailbox for the new mailbox name in RENAME.
+*------------+------------*--------------+
+| delete     | CHAR       | DELETE mailbox, old mailbox name in RENAME.
+*------------+------------*--------------+
+| deletemsg  | CHAR       | Set or clear other than \DELETED flag via STORE, also set them during APPEND/COPY.
+*------------+------------*--------------+
+| expunge    | CHAR       | Perform EXPUNGE and expunge as a part of CLOSE.
+*------------+------------*--------------+
+| admin      | CHAR       | Perform SETACL/DELETEACL/GETACL/LISTRIGHTS.
+*------------+------------*--------------+
+acl
+
+** alias
+
+   Defines the mailrouting address for specific mail address.
+
+*------------+--------------*---------------------------------+
+|| Attribute || Data Type   || Description                    |
+*------------+--------------*---------------------------------+
+| id         | BIGINT       | Primary key.                    |
+*------------+--------------*---------------------------------+
+| user_id    | BIGINT       | Foreign key referencing user.id.|
+*------------+--------------*---------------------------------+
+| alias      | VARCHAR(100) | Destination by MDA.             |
+*------------+--------------*---------------------------------+
+alias
+
+** headername
+
+   Message header names referenced by headervalue table.
+
+*------------+--------------*--------------+
+|| Attribute || Data Type   || Description |
+*------------+--------------*--------------+
+| id         | BIGINT       | Primary key. |
+*------------+--------------*--------------+
+| headername | VARCHAR(100) | Header name. |
+*------------+--------------*--------------+
+headername
+
+** headervalue
+
+   Message header values stored in each raw e-mail.
+
+*---------------+------------*--------------+
+|| Attribute    || Data Type || Description |
+*---------------+------------*--------------+
+| id            | BIGINT     | Primary key.
+*---------------+------------*--------------+
+| physmessageid | BIGINT     | Foreign key referencing physmessage.id.
+*---------------+------------*--------------+
+| headernameid  | BIGINT     | Foreign key referencing headername.id.
+*---------------+------------*--------------+
+| headervalue   | TEXT       | Header value.
+*---------------+------------*--------------+
+headervalue
+
+** keyword
+
+   User flags for each messages are stored in this table.
+
+*------------+--------------*--------------+
+|| Attribute || Data Type   || Description |
+*------------+--------------*--------------+
+| messageid  | BIGINT       | Primary key and foreign key referencing message.messageid.
+*------------+--------------*--------------+
+| keyword    | VARCHAR(255) | Keyword of the message.
+*------------+--------------*--------------+
+keyword
+
+** mailbox
+
+   Mailbox information is stored in this table.
+
+*-------------+--------------*--------------+
+|| Attribute  || Data Type   || Description |
+*-------------+--------------*--------------+
+| mailboxid   | BIGINT       | Primary key.
+*-------------+--------------*--------------+
+| ownerid     | BIGINT       | Foreign key referencing user.id.
+*-------------+--------------*--------------+
+| name        | VARCHAR(255) | Name of mailbox including the hierarchy information.
+*-------------+--------------*--------------+
+| noinferiors | CHAR         | No child levels under this mailbox possible.
+*-------------+--------------*--------------+
+| noselect    | CHAR         | Not possible to use this mailbox as selectable mailbox.
+*-------------+--------------*--------------+
+| readonly    | CHAR         | READ-ONLY or READ-WRITE.
+*-------------+--------------*--------------+
+| nextuid     | BIGINT       | The next unique indentifier for the message which will be stored in this mailbox.
+*-------------+--------------*--------------+
+| uidvalidity | BIGINT       | The unique indentifier validity value for this mailbox.
+*-------------+--------------*--------------+
+mailbox
+
+** message
+
+   Message information for each mailboxes. IMAP system flags for each messages as defined in RFC 3501.
+
+*---------------+------------*--------------+
+|| Attribute    || Data Type || Description |
+*---------------+------------*--------------+
+| messageid     | BIGINT     | Primary key.
+*---------------+------------*--------------+
+| mailboxid     | BIGINT     | Foreign key referencing mailbox.mailboxid.
+*---------------+------------*--------------+
+| physmessageid | BIGINT     | Foreign key referencing physmessage.id.
+*---------------+------------*--------------+
+| seen          | CHAR       | Message has been read.
+*---------------+------------*--------------+
+| answered      | CHAR       | Message has been answered.
+*---------------+------------*--------------+
+| deleted       | CHAR       | Message is deleted for removal by later EXPUNGE.
+*---------------+------------*--------------+
+| flagged       | CHAR       | Message is flagged for urgent or special attention.
+*---------------+------------*--------------+
+| recent        | CHAR       | Message recently arrived in this mailbox.
+*---------------+------------*--------------+
+| draft         | CHAR       | Message has not completed composition.
+*---------------+------------*--------------+
+message
+
+** physmessage
+
+   Mapping table for message and raw e-mail message stored in file system.
+
+*--------------+------------*--------------+
+|| Attribute   || Data Type || Description |
+*--------------+------------*--------------+
+| id           | BIGINT     | Primary key.
+*--------------+------------*--------------+
+| size         | BIGINT     | Raw mail size.
+*--------------+------------*--------------+
+| internaldate | BIGINT     | Internal Date Message Attribute.
+*--------------+------------*--------------+
+| subject      | CHAR       | Envelope structure's SUBJECT field string.
+*--------------+------------*--------------+
+| sentdate     | CHAR       | RFC-2822 Date: header value.
+*--------------+------------*--------------+
+| fromaddr     | CHAR       | Envelope structure's FROM field.
+*--------------+------------*--------------+
+physmessage
+
+** subscription
+
+   Subscribed mailboxes of a user returned by LSUB command.
+
+*------------+--------------*--------------+
+|| Attribute || Data Type   || Description |
+*------------+--------------*--------------+
+| userid     | BIGINT       | First part of unique key and foreign key referencing user.id.
+*------------+--------------*--------------+
+| mailboxid  | BIGINT       | Second part of unique key and foreign key referencing mailbox.mailboxid.
+*------------+--------------*--------------+
+| name       | VARCHAR(255) | Name of the mailbox subscribed.
+*------------+--------------*--------------+
+subscription
+
+** user
+
+   User table.
+
+*--------------+--------------*--------------+
+|| Attribute   || Data Type   || Description |
+*--------------+--------------*--------------+
+| id           | BIGINT       | Primary key.
+*--------------+--------------*--------------+
+| userid       | VARCHAR(100) | E-mail address for the user.
+*--------------+--------------*--------------+
+| passwd | VARCHAR(34)        | Login password of the user.
+*--------------+--------------*--------------+
+| maxmail_size | BIGINT       | RFC 2087 IMAP4 QUOTA extension.
+*--------------+--------------*--------------+
+| forward      | VARCHAR(100) | The mail address to which this user's email is forwarded.
+*--------------+--------------*--------------+
+user
+
+Directory Structure
+
+   Installing the Hedwig distribution creates a hedwig-{version} directory that contains server start scripts, 
+   JARs, server configuration sets, SQL scripts and working and data directories.	
+
+*------------+----------------+
+|| Directory || Description   |
+*------------+----------------+
+| bin        | Start and delivery scripts are located in the bin directory.
+*------------+----------------+
+| conf       | The conf directory contains the applicationContext.xml and default.properties file for server configuration.
+*------------+----------------+
+| data       | The data directory contains all the message files delivered to this server.\
+|            | Message files are stored in sub directories that are dynamically created according to the date of transmission.\
+|            | These sub directories look like this: \
+|            | \
+|            | data/mail/YYYY/MM/DD/XX \
+|            | \
+|            | where XX is modular for the physical message ID of the message file.
+*------------+----------------+
+| lib        | The lib directory contains all Java libraries used by Hedwig.
+*------------+----------------+
+| spool      | The spool directory contains spooled messages stored by SMTP server.
+*------------+----------------+
+| sql        | The sql directory contains SQL scripts creating database structure.
+*------------+----------------+
+| temp       | The tmp directory is used by LDA to store temporarily message files which was not assigned physical message identifier.\
+|            | These files will be moved to the data directory after server assigns physical message identifier.
+*------------+----------------+
+
+Disk Cleanup Cron
+
+   The Disk Cleanup cron helps you free up space on mail server's hard disk by searching for messages and message files that can be deleted or compressed.
+
+* Target Categories in Disk Cleanup Cron
+
+   There are two different types of categories that Disk Cleanup targets when it performs the job.
+
+   * <<Expunge Old Messages and Message Files>>
+
+     It expunges messages and message files that are stored in specfic mailbox and older than specific period of time from now.
+     You can specify the mailboxes and periods by setting the <<expunge_after>> parameter in <default.properties>.
+     This parameter is consist of pairs of mailbox name and period.
+
+   * <<Compress Old Message Files>>
+
+     It compresses message files that are older than specific period of time from now.
+     The files are still available, but there will be a slight increase in access times because the files will be decompressed every time they are accessed.
+     You can specify the period by setting the <<compress_after>> parameter in <default.properties>.
+
+* Schedule Disk Cleanup
+
+   You might want to set the cron to run daily or weekly depending on what works best for you.
+   To schedule Disk Cleanup Cron to run on a regular basis we need to edit the <applicationContext.xml> from <conf> directory of your installation.
+Change the <emphasis>cronExpression</emphasis> to what you want to.
+
+----
+        <bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+                <property name="jobDetail" ref="diskCleanupJob" />
+                <!-- Run every day at 3 AM -->
+                <property name="cronExpression" value="0 0 3 * * ?" />
+        </bean>
+----
+
+   The <cronExpression> is a string that is actually made up of seven sub-expressions, that descibe individual details of the schedule. 
+   These sub-expression are separated with white-space, and represents:
+
+   * Seconds
+
+   * Minutes
+
+   * Hours
+
+   * Day-of-Month
+
+   * Month
+
+   * Day-of-Week
+
+   * Year (optional field)
+
+   See the {{{http://www.quartz-scheduler.org/docs/tutorial/TutorialLesson06.html}Quartz Enterprise Job Scheduler Tutorial}} for more information about cron expression.

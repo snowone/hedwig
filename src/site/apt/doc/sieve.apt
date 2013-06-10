@@ -1,0 +1,54 @@
+                       ---------------------
+                       Sieve
+                       ---------------------
+
+Introduction
+
+   The Hedwig provides Sieve support for Local Delivery Agent(LDA).
+   The Sieve interpreter filters incoming messages using a script written in the Sieve language (RFC 5528).
+   The Sieve script is provided by the user and the user can customize how incoming messages are handled.
+   Messages can be delivered to specific folders, forwarded, rejected, discarded, etc.
+
+Sieve script location
+
+   By default, Hedwig looks for the user's default Sieve script file in the user's home directory.
+   The user's default script file name is <default.sieve>.
+
+   If user's private Sieve script does not exist, 
+   then global Sieve script is used which is located in the domain's home directory.
+
+Sieve examples
+
+   Store messages into specific folder/subfolder by various header values.
+
+----
+# Declare any optional features or extension used by the script.
+require ["fileinto", "reject"]
+
+if header :contains "subject" ["order", "buy"] {
+        # Forward mails with "order" or "buy" in their subject to another address.
+        redirect "order@example.com";
+        stop;
+}
+if size :over 1M {
+        # Reject any large messages.
+        reject "Please do not send me large attachments. Put your file on a server and send me the URL.";
+        stop;
+}
+if header :is "Sender" ""owner-ietf-mta-filters@imc.org" {
+        # Handle messages from known mailing lists.
+        # Move messages from IETF filter discussion list to filter folder.
+        fileinto "filter";
+} elsif address :domain :is ["From", "To"] "example.com" {
+        # Keep all messages to or from people in my company
+        keep;
+} elsif anyof (not address :all :contains ["To", "Cc", "Bcc"] "me@example.com", 
+                        header :matches "subject" ["*make*money*fast*", "*university*dipl*mas*"]) {
+        # Try and catch unsolicited email.
+        # If a message is not to me, or it contains a subject known to be spam, file it away.
+        fileinto "spam";
+} else {
+        # Move all other (non-company) mail to "personal" folder.
+        fileinto "personal";
+}
+----
