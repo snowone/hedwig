@@ -6,6 +6,7 @@
 		<groupId>com.hs</groupId>
 		<artifactId>hedwig-parent</artifactId>
 		<version>0.5</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>hedwig-web</artifactId>
