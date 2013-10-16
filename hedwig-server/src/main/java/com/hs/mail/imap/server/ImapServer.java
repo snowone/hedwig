@@ -189,6 +189,7 @@ public class ImapServer implements InitializingBean {
 				handler.setDebugOut(new PrintStream(fos));
 			} catch (FileNotFoundException e) {
 				// Ignore this exception
+				log.error(e.getMessage());
 			}
 		}
 		return handler;

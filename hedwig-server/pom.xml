@@ -6,6 +6,7 @@
 		<groupId>com.hs</groupId>
 		<artifactId>hedwig-parent</artifactId>
 		<version>0.5</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
 	<artifactId>hedwig-server</artifactId>
@@ -24,8 +25,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${pom.groupId}</groupId>
+			<groupId>com.hs</groupId>
 			<artifactId>hedwig-api</artifactId>
+			<version>0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

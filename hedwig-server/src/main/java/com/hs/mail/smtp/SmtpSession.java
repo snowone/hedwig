@@ -15,12 +15,10 @@
  */
 package com.hs.mail.smtp;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Random;
 
-import com.hs.mail.container.config.Config;
 import com.hs.mail.container.server.socket.TcpTransport;
 import com.hs.mail.smtp.message.MailAddress;
 import com.hs.mail.smtp.message.SmtpMessage;

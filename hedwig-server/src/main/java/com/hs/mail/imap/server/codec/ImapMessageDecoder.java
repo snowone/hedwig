@@ -15,15 +15,9 @@
  */
 package com.hs.mail.imap.server.codec;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
@@ -39,15 +33,15 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 public abstract class ImapMessageDecoder extends
 		ReplayingDecoder<ImapMessageDecoder.State> {
 
-	private static final String DEFAULT_PREFIX = "literal";
+	// private static final String DEFAULT_PREFIX = "literal";
 	
-    private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
+    // private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
 	private final int maxLineLength;
 	protected volatile ImapMessage message;
 	private String request;
 	private volatile ChannelBuffer content;
-	private volatile DeferredFileOutputStream os;
+	// private volatile DeferredFileOutputStream os;
 
 	/**
 	 * The internal state of <code>ImapMessageDecoder</code>.
@@ -142,7 +136,7 @@ public abstract class ImapMessageDecoder extends
 		}
 	}
 	
-	private void readFixedLengthChunk(ChannelBuffer buffer) throws IOException {
+	/*private void readFixedLengthChunk(ChannelBuffer buffer) throws IOException {
 		if (os == null) {
 			os = new DeferredFileOutputStream(DEFAULT_BUFFER_SIZE,
 					File.createTempFile(DEFAULT_PREFIX, null));
@@ -150,7 +144,7 @@ public abstract class ImapMessageDecoder extends
 		IOUtils.copyLarge(
 				new ChannelBufferInputStream(buffer, (int) message
 						.getLiteralLength()), os);
-	}
+	}*/
 
 	protected abstract ImapMessage createMessage(String line) throws Exception;
 

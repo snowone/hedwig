@@ -43,9 +43,9 @@ public class StoreRequestBuilder extends AbstractUidRequestBuilder {
 		char c = token.value.charAt(0);
 		Boolean sign = null;
 		if (c == '+') {
-			sign = new Boolean(true);
+			sign = Boolean.TRUE;
 		} else if (c == '-') {
-			sign = new Boolean(false);
+			sign = Boolean.FALSE;
 		}
 		boolean silent = token.value.indexOf('.') > 0;
 		Flags flags = parseFlagList(tokens);

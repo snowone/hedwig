@@ -77,7 +77,7 @@ public class SimpleSpringContainer {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Class klass = classLoader.loadClass(IMPL_CLASS_NAME);
 
-		Object[] args = new Object[] { configLocations, new Boolean(false) };
+		Object[] args = new Object[] { configLocations, Boolean.FALSE };
 		Object applicationContext = ConstructorUtils.invokeConstructor(klass, args);
 		MethodUtils.invokeMethod(applicationContext, "refresh", null);
 
