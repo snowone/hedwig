@@ -53,9 +53,13 @@ public class SearchProcessor extends AbstractImapProcessor {
 		if (CollectionUtils.isNotEmpty(results)) {
 			List<Long> searched = new ArrayList<Long>();
 			for (long messageID : results) {
-				long msgnum = map.getMessageNumber(messageID);
-				if (msgnum != -1) {
-					searched.add(msgnum);
+				if (request.isUseUID()) {
+					searched.add(messageID);
+				} else {
+					long msgnum = map.getMessageNumber(messageID);
+					if (msgnum != -1) {
+						searched.add(msgnum);
+					}
 				}
 			}
 			responder.untagged(request.getCommand() + " "

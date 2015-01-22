@@ -157,8 +157,9 @@ public class MySqlSearchDao extends AbstractDao implements SearchDao {
 		List<Long> result = new ArrayList<Long>();
 		SequenceRange[] sequenceSet = key.getSequenceSet();
 		for (int i = 0; i < sequenceSet.length; i++) {
-			long min = map.getMinMessageNumber(sequenceSet[i].getMin());
-			long max = map.getMaxMessageNumber(sequenceSet[i].getMax());
+			long min = sequenceSet[i].getMin();
+			long max = sequenceSet[i].getMax() > map.getUIDList().size()
+					? map.getUIDList().size() : sequenceSet[i].getMax();
 			for (long j = min; j <= max && j >= 0; j++) {
 				long messageID = map.getUID((int) j);
 				if (messageID != -1) {
